@@ -24,6 +24,7 @@ class User
 
   field :password_digest
   field :remember_me_cookie
+
   has_secure_password
 
   has_mongoid_attached_file :avatar,
@@ -44,6 +45,8 @@ class User
   validates :handedness, :inclusion => { in: %w(left right both), message: "%{value} is not a valid option", allow_blank: true }
   validates :gender, :presence => true, :inclusion => { in: %w(male female) }
   validates :birthdate, :required_age => 13, :date_string => true
+
+  validates_attachment :avatar, content_type: { content_type: ["image/jpg", "image/jpeg", "image/png", "image/gif"] }
 
   before_save :downcase_email
   after_create :create_initial_notification_method
@@ -177,5 +180,9 @@ class User
 
   def create_initial_notification_method
     notification_methods.create(label: "Account email notifier", method: "email", target: email_address)
+  end
+
+  def email_md5
+    Digest::MD5.hexdigest(email_address.downcase)
   end
 end

@@ -7,6 +7,9 @@ class RegistrationsController < ApplicationController
         if League.find(params[:registration][:league_id]).registration_for(current_user)
             redirect_to registrations_user_path(current_user), flash: {error: "You have already registered for this league. Please be patient. There is no need to submitt he same form multiple times. Thank you."} and return
         end
+        unless League.find(params[:registration][:league_id]).registration_open?
+            redirect_to registrations_user_path(current_user), flash: {error: "The registrations for this league have either closed or haven't opened yet. Try again later!"} and return
+        end
         populate_registration Registration.new
     end
 
@@ -111,6 +114,7 @@ class RegistrationsController < ApplicationController
         end
 
         if reg.save
+            MailChimpWorker.perform_async(reg.user._id.to_s, params[:subscribe])
             if reg.user != current_user
                 redirect_to registrations_league_path(reg.league), notice: "Update successful"
             else

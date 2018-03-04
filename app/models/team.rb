@@ -12,6 +12,7 @@ class Team
   field :point_diff, type: Integer, default: 0
   field :league_rank, type: Integer
   field :spirit_average, type: Float
+  validates :name, presence: true
 
   has_and_belongs_to_many :reporters, class_name: "User", foreign_key: :reporters, inverse_of: nil
   has_and_belongs_to_many :captains, class_name: "User", foreign_key: :captains, inverse_of: nil
@@ -22,6 +23,8 @@ class Team
   has_mongoid_attached_file :avatar,
     default_url: lambda {|attachment| "https://www.gravatar.com/avatar/#{Digest::MD5.hexdigest(attachment.instance._id)}?d=identicon&s=330"},
     styles: {profile: '330x330>', roster: '160x160#', thumbnail: '64x64#'}
+
+  validates_attachment :avatar, content_type: { content_type: ["image/jpg", "image/jpeg", "image/png", "image/gif"] }    
 
   def winning_percentage
     return 0 unless wins > 0
